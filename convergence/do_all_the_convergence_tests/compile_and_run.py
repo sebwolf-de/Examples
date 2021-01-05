@@ -15,7 +15,7 @@ on_a_cluster = {"supermuc": True, "local": False}
 # cpu architecture of the cluster
 host_arch = {"supermuc": "skx", "local": "hsw"}
 # convergence orders to test for
-orders = {"supermuc": range(2,8), "local": range(3,7)}
+orders = {"supermuc": range(2,8), "local": range(3,6)}
 # mesh resolutions to test for
 resolutions = {"supermuc": range(2,7), "local": range(2,5)}
 # list of compilers in the order C Compiler, C++ compiler, Fortran compiler
@@ -34,7 +34,7 @@ cmd_line_parser.add_argument(
 cmd_line_parser.add_argument(
     "--equations",
     type=str,
-    choices=["elastic", "viscoelastic", "viscoelastic2", "anisotropic"],
+    choices=["elastic", "viscoelastic", "viscoelastic2", "anisotropic", "poroelastic"],
     default="elastic",
 )
 cmd_line_parser.add_argument(
@@ -110,24 +110,27 @@ os.chdir(args.seissol_dir)
 precision = ["single", "double"]
 parts = {2: 1, 3: 1, 4: 1, 5: 4, 6: 4}
 scales = [2, 100]
-scale_map = {"elastic": 2, "viscoelastic": 2, "viscoelastic2": 2, "anisotropic": 2}
+scale_map = {"elastic": 2, "viscoelastic": 2, "viscoelastic2": 2, "anisotropic": 2, "poroelastic": 2}
 end_time = {
     "elastic": "0.1",
     "viscoelastic": "0.1",
     "viscoelastic2": "0.1",
     "anisotropic": "0.1",
+    "poroelastic": "1e-4",
 }
 material_file = {
     "elastic": "material_viscoelastic.yaml",
     "viscoelastic": "material_viscoelastic.yaml",
     "viscoelastic2": "material_viscoelastic.yaml",
     "anisotropic": "material_anisotropic.yaml",
+    "poroelastic": "material_poroelastic.yaml",
 }
 initial_condition = {
     "elastic": "PlanarWave",
     "viscoelastic": "PlanarWave",
     "viscoelastic2": "PlanarWave",
     "anisotropic": "SuperimposedPlanarwave",
+    "poroelastic": "Planarwave",
 }
 
 archs = [arch_name(p, host_arch[args.cluster]) for p in precision]
@@ -181,7 +184,7 @@ if args.steps in ["build", "all"]:
 os.chdir(cwd)
 
 if args.steps in ["prepare", "all"]:
-    for n in resolutions:
+    for n in resolutions[args.cluster]:
         for scale in scales:
             generate_cmd = (
                 "cubeGenerator "
