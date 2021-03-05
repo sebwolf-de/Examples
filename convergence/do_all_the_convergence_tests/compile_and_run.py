@@ -5,7 +5,6 @@ import subprocess
 import errno
 import re
 from argparse import ArgumentParser
-from shutil import copy
 from pathlib import Path
 import math
 
@@ -15,7 +14,7 @@ on_a_cluster = {"supermuc": True, "local": False}
 # cpu architecture of the cluster
 host_arch = {"supermuc": "skx", "local": "hsw"}
 # convergence orders to test for
-orders = {"supermuc": range(2,8), "local": range(3,6)}
+orders = {"supermuc": range(3,8), "local": range(3,6)}
 # mesh resolutions to test for
 resolutions = {"supermuc": range(2,7), "local": range(2,5)}
 # list of compilers in the order C Compiler, C++ compiler, Fortran compiler
@@ -80,13 +79,15 @@ def par_name(eq, n):
 def resolution(eq, n):
     return scale_map[eq] / 2 ** n * math.sqrt(3)
 
+def sim_name(arch, eq, o, n):
+    return "{}_{}_{}_{}".format(arch, eq, o, 2 ** n)
 
 def log_name(arch, eq, o, n):
-    return "{}_{}_{}_{}.log".format(arch, eq, o, 2 ** n)
+    return "{}.log".format(sim_name(arch, eq, o, n))
 
 
 def job_name(arch, eq, o, n):
-    return "{}_{}_{}_{}.sh".format(arch, eq, o, 2 ** n)
+    return "{}.sh".format(sim_name(arch, eq, o, n))
 
 
 def on_off(boolean):
@@ -177,9 +178,9 @@ if args.steps in ["build", "all"]:
                 quit()
             num_quantities = 9 + 6 * num_mechs(equations)
             sn = seissol_name(arch_name(prec, host_arch[args.cluster]), equations, o, "Release")
-            copy_source = sn
+            copy_source = os.path.join(args.seissol_dir, "build_convergence", sn)
             copy_target = os.path.join(cwd, sn)
-            copy(copy_source, copy_target)
+            os.symlink(copy_source, copy_target)
 
 os.chdir(cwd)
 
@@ -225,6 +226,7 @@ if args.steps in ["run", "all"]:
                     job = job.replace("PARTITION", partition(nodes, args.cluster))
                     job = job.replace("NODES", str(nodes))
                     job = job.replace("LOG_FILE", log_file)
+                    job = job.replace("LOG_NAME", sim_name(arch, equations, o, n))
                 job = job.replace("WORK_DIR", cwd)
                 file_name = os.path.join(job_dir, job_name(arch, equations, o, n))
                 with open(file_name, "w") as f:

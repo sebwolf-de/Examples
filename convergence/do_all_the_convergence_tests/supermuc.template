@@ -12,7 +12,7 @@
 #SBATCH --mail-user=wolf.sebastian@in.tum.de
 
 # Wall clock limit:
-#SBATCH --time=10:00
+#SBATCH --time=02:30
 #SBATCH --no-requeue
 
 #Setup of execution environment
