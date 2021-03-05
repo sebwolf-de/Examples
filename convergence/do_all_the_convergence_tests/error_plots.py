@@ -18,6 +18,10 @@ def plot_errors(errors_df, var, norm, output_prefix, interactive=False):
         "u",
         "v",
         "w",
+        "p",
+        "u_f",
+        "v_f",
+        "w_f"
     ]
     variable_names_output = [
         "s_xx",
@@ -29,6 +33,10 @@ def plot_errors(errors_df, var, norm, output_prefix, interactive=False):
         "u",
         "v",
         "w",
+        "p",
+        "u_f",
+        "v_f",
+        "w_f"
     ]
     norm_to_latex = {"L1": "L^1", "L2": "L^2", "LInf": "L^\infty"}
 
